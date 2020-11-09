@@ -1,0 +1,94 @@
+<!-- Code from d3-graph-gallery.com -->
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<!-- Load d3.js -->
+<script src="https://d3js.org/d3.v4.js"></script>
+<script src = "https://d3js.org/d3-request.v1.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<!-- Create a div where the graph will take place -->
+<div id="my_dataviz"></div>
+
+<head>
+
+</head>
+
+<body>
+  <script>
+
+// append the svg object to the body of the page
+var height = 1000
+var width = 1000
+var svg = d3.select("#my_dataviz")
+  .append("svg")
+    .attr("width", width)
+    .attr("height", height)
+
+// The scale you use for bubble size
+var size = d3.scaleSqrt()
+  .domain([1, 100])  // What's in the data, let's say it is percentage
+  .range([1, 100])  // Size in pixel
+
+// Add legend: circles
+var valuesToShow = [300, 200, 100, 50]
+var value_to_key = {300: "subject", 200: "salary", 100: "region", 50: "overall"}
+var myColor = d3.scaleSequential().domain([1,10]).interpolator(d3.interpolateViridis)
+var colorToShow = {50: myColor(6), 100: myColor(5), 200: myColor(4), 300: myColor(2.5)}
+var divsionToShow = ['Overall Scores', 'Region', 'Salary After 10 years', 'Subject or Field of Study']
+var xCircle = 230
+var xlabel = {"Overall Scores": 190, 'Region' :210, 'Salary After 10 years': 170, 'Subject or Field of Study':160}
+var yCircle = 530
+var ylabel = {"Overall Scores": 470, 'Region' :370, 'Salary After 10 years': 290, 'Subject or Field of Study':210}
+svg
+  .selectAll("legend")
+  .data(valuesToShow)
+  .enter()
+  .append("circle")
+    .attr("cx", xCircle)
+    .attr("cy", function(d){ return yCircle - size(d) } )
+    .attr("r", function(d){ return size(d) })
+    .style("fill", function(d){ return colorToShow[d]})
+    .attr("stroke", "none")
+    //.attr("xlink:href", function(d) {return "index.html"})
+
+
+svg.selectAll("circle")
+    .on("click", function(d){
+        $.post("/circle_packing?",
+        {
+          key: value_to_key[d]
+        },
+        function(data, status){
+          window.location.assign('/render_detail')
+        });
+      })
+
+// Add legend: segments
+// svg
+//   .selectAll("legend")
+//   .data(valuesToShow)
+//   .enter()
+//   .append("line")
+//     .attr('x1', function(d){ return xCircle + size(d) } )
+//     .attr('x2', xLabel)
+//     .attr('y1', function(d){ return yCircle - size(d) } )
+//     .attr('y2', function(d){ return yCircle - size(d) } )
+//     .attr('stroke', 'black')
+//     .style('stroke-dasharray', ('2,2'))
+
+// Add legend: labels
+svg
+  .selectAll("legend")
+  .data(divsionToShow)
+  .enter()
+  .append("text")
+    .attr('x', function(d){ return xlabel[d]})
+    .attr('y', function(d){ return ylabel[d]})
+    .text( function(d){ return d } )
+    .style("font-size", 15)
+    .style("height", 40)
+    .attr('alignment-baseline', 'middle')
+    .style("fill", 'white')
+</script>
+</body>
